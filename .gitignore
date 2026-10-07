@@ -1,0 +1,14 @@
+# Rahasia
+db/.env
+src/main/resources/db.properties
+
+# Build
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project

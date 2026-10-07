@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: dioagmar-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      # Hanya bisa diakses dari mesin ini sendiri. Akses dari laptop lewat SSH tunnel.
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Dijalankan otomatis hanya saat volume masih kosong (pertama kali dibuat)
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+
+volumes:
+  mysql_data:
