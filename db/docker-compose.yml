@@ -1,7 +1,9 @@
+name: pbo-java
+
 services:
   mysql:
     image: mysql:8.4
-    container_name: dioagmar-mysql
+    container_name: pbo-java-mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
