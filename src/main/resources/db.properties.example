@@ -1,0 +1,5 @@
+# Salin jadi db.properties (file itu tidak masuk git), lalu isi password.
+# Port 3307 = lewat SSH tunnel ke server. Kalau pakai MySQL lokal (XAMPP/Docker), ganti ke 3306.
+db.url=jdbc:mysql://localhost:3307/pbo_java?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta&characterEncoding=UTF-8
+db.user=pbo_java_app
+db.password=isi_password_disini

@@ -123,7 +123,7 @@ Alasan tidak memakai framework: kami ingin semua class (model, DAO, service, con
 
 ### Struktur package
 ```
-com.dioagmar
+com.pbojava
 ├── model/        User, Admin, Client, Portfolio, ProjectRequest, RequestStatus (enum)
 │   └── feature/  Feature, PlatformFeature, DatabaseFeature, CoreFeature, IntegrationFeature
 ├── pricing/      PricingRule, BundleDiscountRule, QuotationCalculator, Quotation
