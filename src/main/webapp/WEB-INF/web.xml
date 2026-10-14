@@ -5,9 +5,23 @@
          version="6.0">
     <display-name>pbo-java</display-name>
 
-    <!-- Format angka & tanggal JSTL selalu Indonesia (Rp 3.000.000), apa pun bahasa browsernya -->
+    <!-- Lokasi file terjemahan: src/main/resources/i18n/messages_id.properties dan messages_en.properties.
+         Bahasa yang dipakai di tiap request diatur oleh LanguageFilter. -->
     <context-param>
-        <param-name>jakarta.servlet.jsp.jstl.fmt.locale</param-name>
-        <param-value>id-ID</param-value>
+        <param-name>jakarta.servlet.jsp.jstl.fmt.localizationContext</param-name>
+        <param-value>i18n.messages</param-value>
     </context-param>
+
+    <!-- Isi form (POST) dibaca sebagai UTF-8 -->
+    <request-character-encoding>UTF-8</request-character-encoding>
+    <response-character-encoding>UTF-8</response-character-encoding>
+
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <page-encoding>UTF-8</page-encoding>
+            <!-- Buang baris kosong sisa directive <%@ ... %> dari HTML hasil render -->
+            <trim-directive-whitespaces>true</trim-directive-whitespaces>
+        </jsp-property-group>
+    </jsp-config>
 </web-app>

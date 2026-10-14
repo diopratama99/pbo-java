@@ -12,3 +12,6 @@ target/
 .settings/
 .classpath
 .project
+
+# Node
+node_modules/

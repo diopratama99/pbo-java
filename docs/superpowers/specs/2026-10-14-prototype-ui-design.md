@@ -274,12 +274,10 @@ Label 10px hanya untuk info pendukung. Info penting seperti total harga dan kode
 
 ### Alur kerja setiap halaman
 
-1. Usulkan isi halaman: elemen yang tampil, urutannya, dan draft copywriting ID + EN.
-2. User menyetujui atau mengoreksi.
-3. Kerjakan halamannya.
-4. Cek manual: `mvnw compile` berhasil, halaman terbuka di Jetty, tampilan di lebar 375px dan 1440px, serta tampilan dalam bahasa ID dan EN.
-5. User review di browser.
-6. Commit dengan pesan bahasa Inggris, contohnya `feat: add landing page prototype`.
+1. Kerjakan halamannya, termasuk isi dan copywriting ID + EN. Tidak perlu usulan copywriting terlebih dahulu.
+2. Cek manual: `mvnw compile` berhasil, halaman terbuka di Jetty, tampilan di lebar 375px dan 1440px, serta tampilan dalam bahasa ID dan EN.
+3. User review langsung di browser, termasuk isi dan copywriting.
+4. **User yang melakukan commit.** Claude tidak melakukan commit.
 
 **Berhenti setelah setiap halaman** dan tunggu review user sebelum lanjut ke halaman berikutnya.
 

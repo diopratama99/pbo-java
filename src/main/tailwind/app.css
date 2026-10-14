@@ -1,0 +1,116 @@
+/*
+ * Sumber CSS Tailwind. Jangan edit src/main/webapp/assets/css/app.css secara langsung,
+ * file itu hasil build dari file ini (npm run dev / npm run build).
+ */
+@import "tailwindcss" source(none);
+
+/* Hanya scan file yang benar-benar berisi markup */
+@source "../webapp/WEB-INF";
+@source "../webapp/assets/js";
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter/InterVariable-latin.woff2") format("woff2");
+}
+
+@theme {
+  --color-shout: #FDE047;
+  --color-void: #0A0A0A;
+  --color-surface: #171717;
+  --color-deep: #262626;
+  --color-danger: #F87171;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-glass: 32px;
+  --radius-liquid: 120px;
+
+  --ease-liquid: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-ticker: ticker 40s linear infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+}
+
+/* Label kecil uppercase */
+@utility label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-void font-sans text-white antialiased;
+  }
+
+  ::selection {
+    @apply bg-shout text-black;
+  }
+}
+
+@layer components {
+  /* Tombol pill. Varian: .btn-dark, .btn-shout, .btn-outline */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold
+      transition duration-300 ease-liquid hover:scale-105 hover:shadow-lg active:scale-95
+      focus-visible:outline-2 focus-visible:outline-offset-2;
+  }
+  .btn-dark {
+    @apply bg-black text-white focus-visible:outline-black;
+  }
+  .btn-shout {
+    @apply bg-shout text-black focus-visible:outline-shout;
+  }
+  .btn-outline {
+    @apply border-2 border-black/20 text-black focus-visible:outline-black;
+  }
+
+  /* Glass card */
+  .glass {
+    @apply rounded-glass border border-white/20 bg-white/10 shadow-2xl backdrop-blur-2xl;
+  }
+
+  /* Pill badge */
+  .badge {
+    @apply label inline-flex items-center gap-1.5 rounded-full px-3 py-1.5;
+  }
+}
+
+/* Animasi masuk. Hanya aktif kalau motion.js menambahkan class "motion" di <html> */
+.motion [data-rise] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s var(--ease-liquid), transform 0.9s var(--ease-liquid);
+}
+.motion [data-rise].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-ticker {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
