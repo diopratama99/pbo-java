@@ -4,4 +4,10 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
     <display-name>pbo-java</display-name>
+
+    <!-- Format angka & tanggal JSTL selalu Indonesia (Rp 3.000.000), apa pun bahasa browsernya -->
+    <context-param>
+        <param-name>jakarta.servlet.jsp.jstl.fmt.locale</param-name>
+        <param-value>id-ID</param-value>
+    </context-param>
 </web-app>

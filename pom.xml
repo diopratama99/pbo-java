@@ -72,6 +72,22 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.5.1</version>
             </plugin>
+            <!-- Server untuk development: mvnw jetty:run lalu buka http://localhost:8080/pbo-java -->
+            <plugin>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
+                <version>12.1.14</version>
+                <configuration>
+                    <!-- Cek perubahan class Java tiap 2 detik lalu reload otomatis -->
+                    <scan>2</scan>
+                    <webApp>
+                        <contextPath>/pbo-java</contextPath>
+                    </webApp>
+                    <httpConnector>
+                        <port>8080</port>
+                    </httpConnector>
+                </configuration>
+            </plugin>
             <!-- Untuk menjalankan class biasa (main method), contoh: TesKoneksi -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
