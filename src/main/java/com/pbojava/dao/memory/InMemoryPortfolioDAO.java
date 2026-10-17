@@ -5,6 +5,7 @@ import com.pbojava.model.LocalizedText;
 import com.pbojava.model.Portfolio;
 
 import java.util.List;
+import java.util.Optional;
 
 /** Data portofolio contoh untuk prototype. Diganti dengan data dari database di tahap berikutnya. */
 public class InMemoryPortfolioDAO implements PortfolioDAO {
@@ -35,5 +36,10 @@ public class InMemoryPortfolioDAO implements PortfolioDAO {
     @Override
     public List<Portfolio> findAll() {
         return portfolios;
+    }
+
+    @Override
+    public Optional<Portfolio> findById(int id) {
+        return portfolios.stream().filter(portfolio -> portfolio.getId() == id).findFirst();
     }
 }
