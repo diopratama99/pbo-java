@@ -27,14 +27,14 @@ Membuat prototype UI untuk semua halaman di `plan.md`, **tanpa koneksi ke databa
 | Sumber data | Data dummy di memori, lewat interface DAO yang nanti diganti ke versi database |
 | Logika bisnis | Ditunda. Preview harga hanya di JavaScript |
 | Device | HP (375px) dan laptop (1440px) sama penting |
-| Halaman admin | Versi design yang lebih kalem |
+| Halaman admin | Style terang yang sama, tanpa blob dan grain |
 | Test | **Tidak ada test sama sekali** di tahap prototype |
 | Implementation plan | **Tidak dibuat.** Pengerjaan langsung mengikuti urutan di bagian 8 |
 
 ## 3. Ruang lingkup
 
 **Termasuk:**
-- 9 halaman (lihat bagian 8).
+- 10 halaman (lihat bagian 8), termasuk halaman profil tim.
 - Layout klien dan layout admin.
 - Switch bahasa ID/EN.
 - Data dummy untuk portofolio, fitur, dan pengajuan.
@@ -72,7 +72,7 @@ pbo-java/
 │   └── webapp/
 │       ├── assets/
 │       │   ├── css/app.css           # HASIL build Tailwind (di-commit)
-│       │   ├── fonts/inter/          # font Inter di-host sendiri
+│       │   ├── fonts/                # font Outfit dan Reenie Beanie di-host sendiri
 │       │   └── js/                   # vanilla JavaScript
 │       └── WEB-INF/
 │           ├── tags/layout.tag       # layout halaman klien
@@ -93,10 +93,11 @@ URL memakai bahasa Inggris dan **tidak berubah saat bahasa diganti**.
 | URL | Method | Servlet | JSP |
 |---|---|---|---|
 | `/` | GET | `HomeServlet` | `client/home.jsp` |
+| `/team` | GET | `TeamServlet` | `client/team.jsp` |
 | `/estimate` | GET, POST | `EstimateServlet` | `client/estimate.jsp` |
 | `/estimate/success` | GET | `EstimateServlet` | `client/success.jsp` |
 | `/track` | GET, POST | `TrackServlet` | `client/track.jsp` |
-| `/admin/login` | GET, POST | `AdminLoginServlet` | `admin/login.jsp` |
+| `/admin`, `/admin/login`, `/admin/logout` | GET, POST | `AdminLoginServlet` | `admin/login.jsp` |
 | `/admin/requests` | GET, POST | `AdminRequestServlet` | `admin/requests.jsp`, `admin/request-detail.jsp` |
 | `/admin/portfolios` | GET, POST | `AdminPortfolioServlet` | `admin/portfolios.jsp` |
 | `/admin/features` | GET, POST | `AdminFeatureServlet` | `admin/features.jsp` |
@@ -188,75 +189,68 @@ Keempat tiket memakai email `klien@contoh.com`.
 
 ## 7. Design system
 
-Mengikuti design prompt **Hyper-Saturated Fluid**, dengan 2 mode.
-
-### Mode klien (Landing, Estimasi, Sukses, Cek Status)
-
-- Setiap halaman dibuka dengan **hero kuning** yang berisi headline halaman dan aksi utamanya. Sudut kanan bawah `120px`, kiri bawah `40px`, dan teks hitam rata kiri.
-- Konten berikutnya ada di area hitam (void).
-- **Glass card diletakkan di perbatasan kuning dan hitam**, karena efek blur hanya terlihat kalau ada sesuatu di belakangnya.
-- Animasi: section slide-up dengan easing liquid, glass card melayang pelan, tombol "squish" saat diklik.
-
-### Mode admin
-
-- Background hitam mendominasi. Kuning hanya untuk aksen: menu aktif, tombol utama, dan badge `APPROVED`.
-- Tanpa blob dan tanpa animasi melayang.
-- Tabel dan form ada di panel `bg-surface` dengan radius `32px`.
-- Desktop first, tapi tetap bisa dipakai di HP.
+Style awal (Hyper-Saturated Fluid, kuning dan hitam) diganti pada 2026-10-17 karena kontrasnya terlalu tinggi dan bikin mata lelah. Style sekarang adalah **Digital Wellness**: background krem, warna pastel, blob blur di background, dan grain halus seperti kertas. Warna peach dari referensi diganti dengan **glacier teal** supaya tidak terkesan terlalu girly.
 
 ### Design token (`src/main/tailwind/app.css`)
 
 | Token | Nilai | Kegunaan |
 |---|---|---|
-| `--color-shout` | `#FDE047` | Kuning utama |
-| `--color-void` | `#0A0A0A` | Background hitam utama |
-| `--color-surface` | `#171717` | Panel gelap sekunder |
-| `--color-deep` | `#262626` | Input, tabel, elemen di dalam void |
-| `--font-sans` | Inter (di-host sendiri) | Semua teks |
-| `--radius-glass` | `32px` | Glass card, panel, textarea |
-| `--radius-liquid` | `120px` | Lengkungan hero |
-| `--ease-liquid` | `cubic-bezier(0.22, 1, 0.36, 1)` | Animasi masuk |
+| `--color-cream` | `#FDFCF8` | Background utama |
+| `--color-sage` | `#E8EFE8` | Blob, section "Cara kerja", hover menu |
+| `--color-lavender` | `#EFEDF4` | Blob, badge sekunder, badge status REVIEW |
+| `--color-glacier` | `#A8D5D2` | Aksen utama: kartu fitur terpilih, badge APPROVED, menu admin aktif |
+| `--color-glacier-deep` | `#3E7C78` | Versi gelap glacier untuk teks dan titik kecil, supaya tetap terbaca |
+| `--color-ink` | `#292524` | Teks utama dan tombol utama |
+| `--color-muted` | `#78716C` | Teks sekunder dan label |
+| `--color-danger` | `#B4463F` | Status REJECTED, tombol tolak/hapus, pesan error |
+| `--font-sans` | Outfit (di-host sendiri) | Semua teks |
+| `--font-hand` | Reenie Beanie (di-host sendiri) | Teks tulisan tangan untuk penekanan |
+| `--radius-card` | `2rem` | Kartu, panel, input textarea |
+| `--radius-section` | `3rem` | Section besar seperti "Cara kerja" |
+| `--radius-blob` | `4rem` | Sudut foto tim |
+| `--shadow-soft` | `0 4px 20px -2px rgba(0,0,0,0.05)` | Semua kartu |
 
-Merah `#F87171` hanya dipakai untuk titik di badge `REJECTED` dan pesan error form.
+### Aturan umum
+
+- Semua teks memakai sentence case. Tidak ada label uppercase.
+- Judul hero 48px di HP sampai 96px di laptop, `tracking-tight`.
+- Setiap hero halaman klien boleh punya satu baris tulisan tangan (Reenie Beanie, warna glacier-deep) di bawah judul. Teksnya ada di key `*.hero.accent`.
+- Radius semua container antara 2rem dan 4rem. Tombol dan badge berbentuk pill.
+- Grain: lapisan noise SVG dengan opacity 0.35 di atas seluruh halaman klien (class `grain` di `<body>`).
+- Blob: 3 lingkaran blur (sage, lavender, glacier) di belakang bagian atas halaman klien, melayang naik turun 10px dalam 6 detik.
+- Reveal on scroll: elemen `data-rise` naik dari 30px ke 0 dan muncul dari opacity 0 ke 1 dalam 0.8 detik.
+- Saat *reduce motion* aktif, animasi float dimatikan, dan elemen langsung tampil.
 
 ### Komponen dasar
 
-| Komponen | Style |
-|---|---|
-| Hero liquid | `bg-shout`, `rounded-br-[120px] rounded-bl-[40px]`, teks hitam rata kiri |
-| Glass card | `bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[32px] shadow-2xl` |
-| Pill button | `rounded-full`, solid hitam atau kuning, atau outline `border-2 border-black/20`. Hover `scale-105 shadow-lg`, klik `active:scale-95` |
-| Pill badge | `rounded-full`, label `text-[10px]` uppercase `tracking-widest` |
-| Input | `bg-deep rounded-full`, textarea `rounded-[32px]`, border putih tipis saat focus |
+| Komponen | Class | Style |
+|---|---|---|
+| Tombol utama | `.btn .btn-primary` | Pill `bg-ink`, teks krem |
+| Tombol aksen | `.btn .btn-accent` | Pill `bg-glacier`, teks ink |
+| Tombol outline | `.btn .btn-outline` | Pill border tipis |
+| Tombol bahaya | `.btn .btn-danger` | Pill border merah tipis |
+| Kartu | `.card` | Putih, radius 2rem, shadow lembut |
+| Kartu kaca | `.glass` | Putih 60% + blur, dipakai di atas blob |
+| Panel admin | `.panel` | `.card` + padding |
+| Badge | `.badge` | Pill kecil, sentence case |
+| Input | `.input`, `.textarea` | Putih, border tipis, ring glacier saat focus |
 
 ### Badge status pengajuan
 
 | Status | Style |
 |---|---|
-| PENDING | Pill abu-abu |
-| REVIEW | Pill outline putih |
-| APPROVED | Pill kuning solid |
-| REJECTED | Pill gelap dengan titik merah kecil |
+| PENDING | Abu-abu muda (`bg-ink/5`) |
+| REVIEW | Lavender |
+| APPROVED | Glacier |
+| REJECTED | Merah muda (`bg-danger/10`) dengan teks merah |
 
-### Tipografi
+### Halaman admin
 
-| Level | HP | Laptop |
-|---|---|---|
-| Hero headline | `text-5xl` bold `tracking-tight` | `text-8xl` bold `tracking-tight` |
-| Sub-header | `text-lg` medium, opacity 80% | `text-xl` medium, opacity 80% |
-| Body | `text-sm` `leading-relaxed` | sama |
-| Label | `text-[10px]` uppercase `tracking-widest` | sama |
-
-Label 10px hanya untuk info pendukung. Info penting seperti total harga dan kode tiket selalu ditampilkan besar.
+Admin memakai style terang yang sama, tetapi tanpa blob dan grain supaya tabel dan form tetap mudah dibaca. Sidebar dan semua isi memakai `.panel`, dan menu yang aktif berwarna glacier.
 
 ### Konten jujur
 
-- **Ticker di bagian bawah halaman klien:** logo tech stack yang dikuasai tim (Java, MySQL, Tailwind, dll), warna putih atau abu-abu.
-- **Trust badge:** hanya klaim yang memang benar dari produk ini, misalnya "Estimasi gratis" dan "Harga transparan". Tidak ada logo partner atau penghargaan palsu.
-
-### Aksesibilitas
-
-- Saat setting *reduce motion* aktif (`prefers-reduced-motion`), animasi slide-up dan float dimatikan.
+- Trust badge hanya berisi klaim yang benar dari produk ini, yaitu "Estimasi gratis" dan "Harga transparan".
 
 ## 8. Urutan pengerjaan
 
@@ -271,6 +265,7 @@ Label 10px hanya untuk info pendukung. Info penting seperti total harga dan kode
 | 7 | Detail pengajuan | Tombol Review, Setujui, Tolak (tanpa menyimpan) |
 | 8 | Kelola portofolio | Form 2 bahasa |
 | 9 | Kelola fitur & harga | Form 2 bahasa |
+| 10 | Profil tim | Foto PNG tanpa background, nama, posisi, pendidikan, pengalaman |
 
 ### Alur kerja setiap halaman
 
@@ -279,7 +274,7 @@ Label 10px hanya untuk info pendukung. Info penting seperti total harga dan kode
 3. User review langsung di browser, termasuk isi dan copywriting.
 4. **User yang melakukan commit.** Claude tidak melakukan commit.
 
-**Berhenti setelah setiap halaman** dan tunggu review user sebelum lanjut ke halaman berikutnya.
+Langkah 1 dikerjakan dan direview sendiri. Atas permintaan user, langkah 2 sampai 10 dikerjakan sekaligus, lalu direview bersama.
 
 ### Cara menjalankan saat develop
 
@@ -292,5 +287,6 @@ npm run dev              # terminal 1: Tailwind watch
 
 - Design system secara keseluruhan (warna, posisi glass card, warna status). Disetujui sementara dan akan dinilai ulang dari tampilan asli.
 - Nama aplikasi "Bisa." masih sementara.
-- Switch bahasa me-reload halaman, jadi pilihan di kalkulator dan hasil cek status akan hilang. Cara menanganinya dibahas saat mengerjakan halaman Estimasi.
-- Gambar portofolio di `seed.sql` memakai `placehold.co`, yang butuh internet. Gambar pengganti lokal dibahas saat mengerjakan halaman Landing.
+- Switch bahasa me-reload halaman. Pilihan di kalkulator disimpan di `sessionStorage`, jadi tidak hilang. Hasil cek status tetap hilang dan user perlu cek ulang.
+- Gambar portofolio memakai ilustrasi SVG lokal di `assets/img/portfolio/`, jadi tetap tampil tanpa internet.
+- Data tim (pendidikan, posisi, pengalaman) masih contoh di `InMemoryTeamDAO`. Foto disimpan sebagai `assets/img/team/<nama>.png`. Selama file belum ada, tampil siluet placeholder.
