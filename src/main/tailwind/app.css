@@ -1,6 +1,9 @@
 /*
  * Sumber CSS Tailwind. Jangan edit src/main/webapp/assets/css/app.css secara langsung,
  * file itu hasil build dari file ini (npm run dev / npm run build).
+ *
+ * Style: "Digital Wellness". Background krem, warna pastel (sage, lavender, glacier),
+ * blob blur di background, dan grain halus seperti kertas.
  */
 @import "tailwindcss" source(none);
 
@@ -9,47 +12,56 @@
 @source "../webapp/assets/js";
 
 @font-face {
-  font-family: "Inter";
+  font-family: "Outfit";
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("../fonts/inter/InterVariable-latin.woff2") format("woff2");
+  src: url("../fonts/outfit/OutfitVariable-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Reenie Beanie";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/reenie-beanie/ReenieBeanie-latin.woff2") format("woff2");
 }
 
 @theme {
-  --color-shout: #FDE047;
-  --color-void: #0A0A0A;
-  --color-surface: #171717;
-  --color-deep: #262626;
-  --color-danger: #F87171;
+  --color-cream: #FDFCF8;     /* background utama */
+  --color-sage: #E8EFE8;
+  --color-lavender: #EFEDF4;
+  --color-glacier: #A8D5D2;   /* aksen utama (pengganti peach) */
+  --color-glacier-deep: #3E7C78; /* versi gelap glacier untuk teks, supaya tetap terbaca */
+  --color-ink: #292524;       /* teks utama */
+  --color-muted: #78716C;     /* teks sekunder */
+  --color-danger: #B4463F;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-hand: "Reenie Beanie", cursive;
 
-  --radius-glass: 32px;
-  --radius-liquid: 120px;
+  --radius-card: 2rem;
+  --radius-section: 3rem;
+  --radius-blob: 4rem;
 
-  --ease-liquid: cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-soft: 0 4px 20px -2px rgb(0 0 0 / 0.05);
 
-  --animate-float: float 7s ease-in-out infinite;
-  --animate-ticker: ticker 40s linear infinite;
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-float: float 6s ease-in-out infinite;
 
   @keyframes float {
-    0%, 100% { transform: translateY(0); }
+    0%, 100% { transform: translateY(10px); }
     50% { transform: translateY(-10px); }
-  }
-
-  @keyframes ticker {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
   }
 }
 
-/* Label kecil uppercase */
+/* Label kecil. Sentence case, tidak uppercase */
 @utility label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  font-weight: 500;
+  color: var(--color-muted);
 }
 
 @layer base {
@@ -58,47 +70,105 @@
   }
 
   body {
-    @apply bg-void font-sans text-white antialiased;
+    @apply bg-cream font-sans text-ink antialiased;
   }
 
   ::selection {
-    @apply bg-shout text-black;
+    @apply bg-glacier text-ink;
   }
 }
 
 @layer components {
-  /* Tombol pill. Varian: .btn-dark, .btn-shout, .btn-outline */
+  /* Tombol pill. Varian: .btn-primary, .btn-accent, .btn-outline, .btn-danger */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold
-      transition duration-300 ease-liquid hover:scale-105 hover:shadow-lg active:scale-95
-      focus-visible:outline-2 focus-visible:outline-offset-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium
+      transition duration-300 ease-soft hover:scale-105 hover:shadow-soft active:scale-95
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-glacier-deep;
   }
-  .btn-dark {
-    @apply bg-black text-white focus-visible:outline-black;
+  .btn-primary {
+    @apply bg-ink text-cream hover:bg-ink/90;
   }
-  .btn-shout {
-    @apply bg-shout text-black focus-visible:outline-shout;
+  .btn-accent {
+    @apply bg-glacier text-ink hover:bg-glacier/80;
   }
   .btn-outline {
-    @apply border-2 border-black/20 text-black focus-visible:outline-black;
+    @apply border-2 border-ink/10 bg-white/50 text-ink hover:border-ink/25;
+  }
+  .btn-danger {
+    @apply border-2 border-danger/25 text-danger hover:bg-danger/5;
+  }
+  .btn-sm {
+    @apply px-4 py-2 text-xs;
   }
 
-  /* Glass card */
+  /* Kartu putih solid. .panel sama dengan .card ditambah padding, dipakai di admin */
+  .card,
+  .panel {
+    @apply rounded-card border border-ink/5 bg-white shadow-soft;
+  }
+  .panel {
+    @apply p-5 md:p-8;
+  }
+
+  /* Kartu kaca, dipakai di atas blob supaya efek blur-nya terlihat */
   .glass {
-    @apply rounded-glass border border-white/20 bg-white/10 shadow-2xl backdrop-blur-2xl;
+    @apply rounded-card border border-white bg-white/60 shadow-soft backdrop-blur-xl;
   }
 
   /* Pill badge */
   .badge {
-    @apply label inline-flex items-center gap-1.5 rounded-full px-3 py-1.5;
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+  }
+
+  /* Input form */
+  .input,
+  .textarea {
+    @apply w-full rounded-full border border-ink/10 bg-white px-5 py-3.5 text-sm text-ink
+      placeholder:text-muted/60 transition outline-none
+      focus:border-glacier-deep/50 focus:ring-4 focus:ring-glacier/40;
+  }
+  .textarea {
+    @apply min-h-28 rounded-card py-4 leading-relaxed;
+  }
+  .field-label {
+    @apply mb-2 block text-sm font-medium text-ink/80;
+  }
+  .input[aria-invalid="true"],
+  .textarea[aria-invalid="true"] {
+    @apply border-danger/40 ring-4 ring-danger/10;
+  }
+
+  /* Pesan error di bawah field, dibuat oleh validate.js */
+  .field-error {
+    @apply mt-2 flex items-start gap-2 px-2 text-xs leading-relaxed text-danger;
+  }
+  .field-error::before {
+    content: "";
+    @apply mt-1.5 size-1.5 shrink-0 rounded-full bg-danger;
+  }
+
+  /* Blob blur di background */
+  .blob {
+    @apply pointer-events-none absolute rounded-full opacity-70 blur-3xl animate-float;
   }
 }
 
-/* Animasi masuk. Hanya aktif kalau motion.js menambahkan class "motion" di <html> */
+/* Grain halus seperti kertas, menutupi seluruh halaman klien */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.15 0 0 0 0 0.14 0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Reveal on scroll. Hanya aktif kalau script di <head> menambahkan class "motion" di <html> */
 .motion [data-rise] {
   opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.9s var(--ease-liquid), transform 0.9s var(--ease-liquid);
+  transform: translateY(30px);
+  transition: opacity 0.8s var(--ease-soft), transform 0.8s var(--ease-soft);
 }
 .motion [data-rise].is-visible {
   opacity: 1;
@@ -106,8 +176,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-float,
-  .animate-ticker {
+  .animate-float {
     animation: none;
   }
   html {
