@@ -88,23 +88,95 @@ Kode tiket dan email harus cocok dua-duanya. Kode `DA-7K2P9Q` dari halaman penga
 | `/admin/portfolios` | Kelola portofolio | Tambah, ubah, dan hapus portofolio dalam 2 bahasa |
 | `/admin/features` | Kelola fitur dan harga | Tambah, ubah, dan nonaktifkan fitur. Di samping form ada preview kartu seperti yang dilihat klien di kalkulator |
 
-## Schema database per halaman
+## Schema database
 
-Struktur lengkapnya ada di `db/schema.sql`. Di bawah ini tabel dan kolom yang dipakai setiap halaman setelah prototype disambungkan ke database.
+### DDL lengkap
 
-### Beranda
-
-```
-portfolios (id, judul, deskripsi, tech_stack, image_url)
-```
-
-Harga "Mulai dari" berasal dari `master_features`, yaitu Website ditambah MySQL. Di prototype angkanya masih ditulis langsung.
-
-### Tim
-
-Tabelnya belum ada di `db/schema.sql`, dan datanya masih di `InMemoryTeamDAO`. Usulan tabelnya:
+Isi `db/schema.sql`. File ini dijalankan otomatis oleh Docker saat database pertama kali dibuat.
 
 ```sql
+SET NAMES utf8mb4;
+
+CREATE TABLE admins (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    nama VARCHAR(100) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,   -- SHA-256 + salt, tidak disimpan plain text
+    salt VARCHAR(64) NOT NULL
+);
+
+-- Klien yang mengajukan lagi dengan email sama memakai baris yang sama
+CREATE TABLE clients (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nama VARCHAR(100) NOT NULL,
+    instansi VARCHAR(100),
+    email VARCHAR(100) NOT NULL UNIQUE,
+    no_wa VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE portfolios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    judul VARCHAR(150) NOT NULL,
+    deskripsi TEXT,
+    tech_stack VARCHAR(255),
+    image_url VARCHAR(255)
+);
+
+CREATE TABLE master_features (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    kategori ENUM('PLATFORM', 'DATABASE', 'CORE', 'INTEGRATION') NOT NULL,
+    nama_fitur VARCHAR(100) NOT NULL,
+    deskripsi VARCHAR(255),                -- penjelasan singkat untuk klien awam
+    harga_dasar DECIMAL(15,2) NOT NULL,
+    pengali DECIMAL(4,2),                  -- hanya untuk PLATFORM
+    biaya_setup DECIMAL(15,2),             -- hanya untuk INTEGRATION
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE project_requests (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    kode_tiket VARCHAR(12) NOT NULL UNIQUE,
+    client_id INT NOT NULL,
+    custom_notes TEXT,
+    subtotal DECIMAL(15,2) NOT NULL,
+    diskon DECIMAL(15,2) DEFAULT 0,
+    total_estimasi DECIMAL(15,2) NOT NULL,
+    status ENUM('PENDING', 'REVIEW', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    wag_link VARCHAR(255),
+    alasan_ditolak VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES clients(id)
+);
+
+-- harga_saat_itu menyimpan harga ketika pengajuan dibuat,
+-- supaya detail pengajuan lama tidak ikut berubah kalau admin mengganti harga
+CREATE TABLE request_features (
+    request_id INT,
+    feature_id INT,
+    harga_saat_itu DECIMAL(15,2) NOT NULL,
+    PRIMARY KEY (request_id, feature_id),
+    FOREIGN KEY (request_id) REFERENCES project_requests(id),
+    FOREIGN KEY (feature_id) REFERENCES master_features(id)
+);
+```
+
+### DDL tambahan yang dibutuhkan prototype
+
+Prototype sudah menampilkan halaman Tim dan teks 2 bahasa, tapi tabel dan kolomnya belum ada di `db/schema.sql`. Ini usulan DDL untuk tahap database:
+
+```sql
+-- Teks bahasa Inggris untuk fitur dan portofolio
+ALTER TABLE master_features
+    ADD COLUMN nama_fitur_en VARCHAR(100),
+    ADD COLUMN deskripsi_en VARCHAR(255);
+
+ALTER TABLE portfolios
+    ADD COLUMN judul_en VARCHAR(150),
+    ADD COLUMN deskripsi_en TEXT;
+
+-- Halaman Tim (datanya sekarang masih di InMemoryTeamDAO)
 CREATE TABLE team_members (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nama VARCHAR(100) NOT NULL,
@@ -125,93 +197,21 @@ CREATE TABLE team_experiences (
 );
 ```
 
-### Hitung estimasi
+### Tabel yang dipakai setiap halaman
 
-Membaca fitur yang aktif:
-
-```
-master_features (id, kategori, nama_fitur, deskripsi, harga_dasar, pengali, biaya_setup, is_active)
-```
-
-Saat pengajuan dikirim, data disimpan dalam satu transaksi:
-
-```
-clients          (nama, instansi, email, no_wa)
-project_requests (kode_tiket, client_id, custom_notes, subtotal, diskon, total_estimasi, status)
-request_features (request_id, feature_id, harga_saat_itu)
-```
-
-### Pengajuan terkirim
-
-```
-project_requests (kode_tiket)
-```
-
-### Cek status
-
-Mencari pengajuan berdasarkan `kode_tiket` dan `clients.email`:
-
-```
-project_requests (kode_tiket, client_id, status, total_estimasi, wag_link, alasan_ditolak, created_at)
-clients          (id, email)
-```
-
-### Login admin
-
-```
-admins (username, nama, password_hash, salt)
-```
-
-`db/seed.sql` belum berisi akun admin, karena format hash-nya harus sama dengan `PasswordUtil` di Java.
-
-### Daftar pengajuan
-
-```
-project_requests (id, kode_tiket, client_id, total_estimasi, status, created_at)
-clients          (id, nama, email)
-```
-
-### Detail pengajuan
-
-Membaca:
-
-```
-project_requests (semua kolom)
-clients          (nama, instansi, email, no_wa)
-request_features (request_id, feature_id, harga_saat_itu)
-master_features  (id, nama_fitur, kategori)
-```
-
-Aksi review, setujui, dan tolak mengubah:
-
-```
-project_requests (status, wag_link, alasan_ditolak, updated_at)
-```
-
-### Kelola portofolio
-
-```
-portfolios (id, judul, deskripsi, tech_stack, image_url)
-```
-
-### Kelola fitur dan harga
-
-```
-master_features (id, kategori, nama_fitur, deskripsi, harga_dasar, pengali, biaya_setup, is_active)
-```
+| Halaman | Membaca | Mengubah |
+|---|---|---|
+| Beranda | `portfolios`, `master_features` (harga "Mulai dari") | |
+| Tim | `team_members`, `team_experiences` | |
+| Hitung estimasi | `master_features` yang `is_active = TRUE` | `clients`, `project_requests`, `request_features` dalam satu transaksi saat pengajuan dikirim |
+| Pengajuan terkirim | `project_requests.kode_tiket` | |
+| Cek status | `project_requests` join `clients`, dicari dengan `kode_tiket` dan `clients.email` | |
+| Login admin | `admins` | |
+| Daftar pengajuan | `project_requests` join `clients` | |
+| Detail pengajuan | `project_requests`, `clients`, `request_features` join `master_features` | `project_requests.status`, `wag_link`, `alasan_ditolak` |
+| Kelola portofolio | `portfolios` | `portfolios` (tambah, ubah, hapus) |
+| Kelola fitur dan harga | `master_features` | `master_features` (tambah, ubah, `is_active`) |
 
 Fitur yang sudah pernah dipakai di pengajuan tidak dihapus. Kolom `is_active` diubah menjadi `FALSE`, supaya fitur itu hilang dari kalkulator tapi pengajuan lama tetap utuh.
 
-### Kolom bahasa Inggris
-
-Prototype sudah menampilkan nama dan deskripsi fitur serta portofolio dalam 2 bahasa, tapi `db/schema.sql` belum punya kolomnya. Di tahap database, tambahkan:
-
-```sql
-ALTER TABLE master_features
-    ADD COLUMN nama_fitur_en VARCHAR(100),
-    ADD COLUMN deskripsi_en VARCHAR(255);
-
-ALTER TABLE portfolios
-    ADD COLUMN judul_en VARCHAR(150),
-    ADD COLUMN deskripsi_en TEXT;
-```
+`db/seed.sql` belum berisi akun admin, karena format hash-nya harus sama dengan `PasswordUtil` di Java.
