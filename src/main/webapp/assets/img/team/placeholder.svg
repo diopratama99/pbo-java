@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none">
+  <!-- Siluet sementara. Ganti dengan foto PNG tanpa background (dio.png, agmar.png, wulandari.png) -->
+  <circle cx="200" cy="170" r="88" fill="#FDFCF8" fill-opacity=".9"/>
+  <path d="M40 500c0-110 72-200 160-200s160 90 160 200Z" fill="#FDFCF8" fill-opacity=".9"/>
+</svg>
