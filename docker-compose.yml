@@ -1,0 +1,23 @@
+# Aplikasi web untuk server. Database-nya terpisah di db/docker-compose.yml.
+name: pbo-java-web
+
+services:
+  web:
+    build: .
+    image: pbo-java-web:latest
+    container_name: pbo-java-web
+    restart: unless-stopped
+    ports:
+      # 8088 dipilih karena belum dipakai service lain di server
+      - "8088:8080"
+    volumes:
+      # Folder lib Tomcat ada di classpath, jadi DBConnection bisa membaca /db.properties dari sini
+      - ${DB_PROPERTIES:-./src/main/resources/db.properties}:/usr/local/tomcat/lib/db.properties:ro
+    networks:
+      - db
+
+networks:
+  # Network milik container MySQL (db/docker-compose.yml), supaya bisa konek ke host "mysql"
+  db:
+    name: pbo-java_default
+    external: true

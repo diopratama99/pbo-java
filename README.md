@@ -41,6 +41,26 @@ Prototype belum memakai database. Database baru dipakai oleh halaman `/tes` dan 
    .\mvnw.cmd compile exec:java "-Dexec.mainClass=com.pbojava.util.TesKoneksi"
    ```
 
+## Deploy ke server
+
+Aplikasi berjalan di server `serverdio` sebagai container `pbo-java-web` (Tomcat 10.1), di port `8088`. Di server ini aplikasi dipasang di root, jadi alamatnya `http://serverdio:8088/`, bukan `/pbo-java/`.
+
+Setiap push ke branch `main` otomatis ter-deploy dalam waktu sekitar 1 menit. Cron di server menjalankan [deploy/auto-deploy.sh](deploy/auto-deploy.sh) tiap menit. Skrip itu mengecek `origin/main`. Kalau ada commit baru, kode di-pull lalu container di-build ulang. Kalau build gagal, versi lama tetap jalan.
+
+| Yang dicari | Lokasi di server |
+|---|---|
+| Kode aplikasi | `~/apps/pbo-java` |
+| Log deploy | `~/apps/pbo-java-deploy.log` |
+| Konfigurasi database | `~/pbo-java-db/db.properties` (tidak masuk git) |
+
+Perintah yang sering dipakai (jalankan di server):
+
+```bash
+tail -f ~/apps/pbo-java-deploy.log           # lihat proses deploy
+docker logs -f pbo-java-web                  # lihat log Tomcat
+~/apps/pbo-java/deploy/auto-deploy.sh --force   # deploy ulang tanpa menunggu commit baru
+```
+
 ## Login admin
 
 Buka http://localhost:8080/pbo-java/admin/login
