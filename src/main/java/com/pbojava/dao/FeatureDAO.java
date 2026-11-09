@@ -14,4 +14,13 @@ public interface FeatureDAO {
     List<Feature> findActive();
 
     Optional<Feature> findById(int id);
+
+    /** Tambah fitur baru kalau id-nya 0, selain itu ubah fitur yang ada. Mengembalikan id fitur. */
+    int save(Feature feature);
+
+    /**
+     * Fitur tidak pernah dihapus, cukup dinonaktifkan,
+     * supaya pengajuan lama yang memakai fitur ini tetap utuh.
+     */
+    void setAktif(int id, boolean aktif);
 }

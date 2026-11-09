@@ -14,7 +14,7 @@
         </c:if>
     </div>
 
-    <%-- Form tambah/ubah. Prototype: tombol Simpan belum menyimpan data --%>
+    <%-- Form tambah/ubah. Isiannya divalidasi lagi di AdminFeatureServlet --%>
     <c:if test="${not empty formMode}">
         <c:set var="kategoriTerpilih" value="${formMode == 'edit' ? editing.kategori : 'CORE'}"/>
         <form method="post" action="${ctx}/admin/features" class="panel mt-6 grid gap-10 xl:grid-cols-[1fr_320px]" data-feature-form data-validate>
@@ -24,6 +24,11 @@
             </h2>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="${editing.id}">
+            <c:if test="${not empty errorKey}">
+                <p class="mt-4 flex items-center gap-2 rounded-full bg-danger/10 px-4 py-2.5 text-sm text-danger" role="alert">
+                    <span class="size-1.5 shrink-0 rounded-full bg-danger"></span><fmt:message key="${errorKey}"/>
+                </p>
+            </c:if>
 
             <div class="mt-6 grid gap-5 md:grid-cols-2">
                 <div class="md:col-span-2">

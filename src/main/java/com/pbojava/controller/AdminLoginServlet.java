@@ -8,14 +8,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.Optional;
 
-/**
- * Login dan logout admin.
- * Prototype: belum ada filter penjaga /admin/*, jadi halaman admin masih bisa dibuka tanpa login.
- */
+/** Login dan logout admin. Halaman /admin/* lainnya dijaga oleh AdminAuthFilter. */
 @WebServlet({"/admin", "/admin/login", "/admin/logout"})
 public class AdminLoginServlet extends HttpServlet {
 
@@ -26,7 +24,10 @@ public class AdminLoginServlet extends HttpServlet {
         switch (request.getServletPath()) {
             case "/admin" -> response.sendRedirect(ctx + "/admin/requests");
             case "/admin/logout" -> {
-                request.getSession().removeAttribute("admin");
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    session.removeAttribute("admin");
+                }
                 response.sendRedirect(ctx + "/admin/login");
             }
             default -> request.getRequestDispatcher("/WEB-INF/views/admin/login.jsp").forward(request, response);
@@ -41,6 +42,9 @@ public class AdminLoginServlet extends HttpServlet {
 
         Optional<Admin> admin = DAOFactory.adminDAO().findByUsername(username == null ? "" : username.trim());
         if (admin.isPresent() && admin.get().passwordCocok(password == null ? "" : password)) {
+            // Ganti id session setelah login, supaya id session lama tidak bisa dipakai orang lain
+            request.getSession();
+            request.changeSessionId();
             request.getSession().setAttribute("admin", admin.get());
             response.sendRedirect(request.getContextPath() + "/admin/requests");
             return;

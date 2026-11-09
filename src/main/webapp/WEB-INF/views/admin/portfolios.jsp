@@ -11,7 +11,7 @@
         </c:if>
     </div>
 
-    <%-- Form tambah/ubah. Prototype: tombol Simpan belum menyimpan data --%>
+    <%-- Form tambah/ubah. Isiannya divalidasi lagi di AdminPortfolioServlet --%>
     <c:if test="${not empty formMode}">
         <form method="post" action="${ctx}/admin/portfolios" class="panel mt-6" data-validate>
             <h2 class="text-xl font-semibold tracking-tight">
@@ -19,6 +19,11 @@
             </h2>
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="id" value="${editing.id}">
+            <c:if test="${not empty errorKey}">
+                <p class="mt-4 flex items-center gap-2 rounded-full bg-danger/10 px-4 py-2.5 text-sm text-danger" role="alert">
+                    <span class="size-1.5 shrink-0 rounded-full bg-danger"></span><fmt:message key="${errorKey}"/>
+                </p>
+            </c:if>
 
             <div class="mt-6 grid gap-5 md:grid-cols-2">
                 <label class="block">
@@ -44,7 +49,7 @@
                 </label>
                 <label class="block">
                     <span class="field-label"><fmt:message key="admin.form.image"/></span>
-                    <input type="text" name="imageUrl" class="input" maxlength="255" placeholder="/assets/img/portfolio/nama-file.svg" value="<c:out value="${editing.imageUrl}"/>">
+                    <input type="text" name="imageUrl" class="input" maxlength="255" required placeholder="/assets/img/portfolio/nama-file.svg" value="<c:out value="${editing.imageUrl}"/>">
                 </label>
             </div>
 

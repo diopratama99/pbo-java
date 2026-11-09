@@ -20,6 +20,11 @@ public class IntegrationFeature extends Feature {
         return "INTEGRATION";
     }
 
+    @Override
+    public BigDecimal hitungHarga(PlatformFeature platform) {
+        return getHargaDasar().add(biayaSetup);
+    }
+
     public BigDecimal getBiayaSetup() {
         return biayaSetup;
     }

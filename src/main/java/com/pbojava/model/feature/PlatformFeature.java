@@ -20,6 +20,12 @@ public class PlatformFeature extends Feature {
         return "PLATFORM";
     }
 
+    /** Harga platform tetap, tidak dipengaruhi apa pun. */
+    @Override
+    public BigDecimal hitungHarga(PlatformFeature platform) {
+        return getHargaDasar();
+    }
+
     public BigDecimal getPengali() {
         return pengali;
     }

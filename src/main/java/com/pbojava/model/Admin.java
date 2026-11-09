@@ -1,19 +1,28 @@
 package com.pbojava.model;
 
+import com.pbojava.util.PasswordUtil;
+
 /**
- * Akun admin.
- * Prototype: password masih disimpan apa adanya. Di tahap database diganti hash + salt (PasswordUtil).
+ * Akun admin. Password tidak pernah disimpan apa adanya, hanya hash dan salt-nya (PasswordUtil).
  */
 public class Admin {
 
+    private final int id;
     private final String username;
     private final String nama;
-    private final String password;
+    private final String passwordHash;
+    private final String salt;
 
-    public Admin(String username, String nama, String password) {
+    public Admin(int id, String username, String nama, String passwordHash, String salt) {
+        this.id = id;
         this.username = username;
         this.nama = nama;
-        this.password = password;
+        this.passwordHash = passwordHash;
+        this.salt = salt;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getUsername() {
@@ -25,6 +34,6 @@ public class Admin {
     }
 
     public boolean passwordCocok(String input) {
-        return password.equals(input);
+        return PasswordUtil.cocok(input, passwordHash, salt);
     }
 }

@@ -91,10 +91,15 @@
             </section>
         </div>
 
-        <%-- Aksi sesuai status. Prototype: tombol belum mengubah data --%>
+        <%-- Aksi sesuai status. Aturannya dicek lagi di ProjectRequest --%>
         <aside class="xl:sticky xl:top-6 xl:self-start">
             <section class="panel space-y-6">
                 <h2 class="label text-muted"><fmt:message key="admin.detail.actions"/></h2>
+                <c:if test="${not empty errorKey}">
+                    <p class="flex items-center gap-2 rounded-full bg-danger/10 px-4 py-2.5 text-sm text-danger" role="alert">
+                        <span class="size-1.5 shrink-0 rounded-full bg-danger"></span><fmt:message key="${errorKey}"/>
+                    </p>
+                </c:if>
 
                 <c:choose>
                     <c:when test="${item.status == 'PENDING'}">

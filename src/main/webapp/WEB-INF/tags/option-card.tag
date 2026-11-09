@@ -9,7 +9,9 @@
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <label class="group relative flex cursor-pointer flex-col rounded-card border border-ink/5 bg-white p-5 shadow-soft transition duration-300 ease-soft hover:border-ink/15 active:scale-[0.98] has-checked:border-glacier-deep/30 has-checked:bg-glacier/45 has-focus-visible:ring-4 has-focus-visible:ring-glacier/50 has-aria-invalid:border-danger/30">
     <%-- Data harga dibaca estimate.js untuk menghitung preview --%>
+    <%-- selected: id fitur yang tadi dipilih, diisi EstimateServlet kalau pengajuan ditolak validasi server --%>
     <input type="${type}" name="${name}" value="${feature.id}" class="sr-only" ${required ? 'required' : ''}
+           ${not empty selected and selected.contains(feature.id) ? 'checked' : ''}
            <c:if test="${not empty requiredMessageKey}">data-msg-required="<fmt:message key="${requiredMessageKey}"/>"</c:if>
            data-kategori="${feature.kategori}"
            data-harga="${feature.hargaDasar}"

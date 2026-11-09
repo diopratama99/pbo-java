@@ -27,6 +27,13 @@ public abstract class Feature {
     /** PLATFORM, DATABASE, CORE, atau INTEGRATION. Sama dengan kolom kategori di tabel master_features. */
     public abstract String getKategori();
 
+    /**
+     * Harga fitur ini kalau dipilih bersama platform tertentu.
+     * Setiap subclass punya cara hitung sendiri (plan.md bagian 6), jadi QuotationCalculator
+     * cukup memanggil method ini tanpa perlu tahu jenis fiturnya.
+     */
+    public abstract BigDecimal hitungHarga(PlatformFeature platform);
+
     public int getId() {
         return id;
     }

@@ -1,5 +1,8 @@
 package com.pbojava.model;
 
+import com.pbojava.exception.InvalidStatusException;
+import com.pbojava.exception.ValidationException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -8,9 +11,15 @@ import java.util.Locale;
 
 /**
  * Pengajuan proyek dari klien.
- * Prototype: belum ada method approve(), reject(), dll. Aturan perubahan status dibuat di tahap berikutnya.
+ *
+ * Status tidak punya setter. Status hanya bisa diubah lewat mulaiReview(), approve(), dan reject(),
+ * supaya alur di plan.md bagian 5 tetap berlaku dari mana pun method-nya dipanggil:
+ * PENDING → REVIEW → APPROVED, dan PENDING/REVIEW → REJECTED. APPROVED dan REJECTED adalah status akhir.
  */
 public class ProjectRequest {
+
+    public static final String WAG_PREFIX = "https://chat.whatsapp.com/";
+    public static final int MAKS_PANJANG_TEKS = 255;
 
     private final int id;
     private final String kodeTiket;
@@ -20,9 +29,9 @@ public class ProjectRequest {
     private final BigDecimal subtotal;
     private final BigDecimal diskon;
     private final BigDecimal totalEstimasi;
-    private final RequestStatus status;
-    private final String wagLink;
-    private final String alasanDitolak;
+    private RequestStatus status;
+    private String wagLink;
+    private String alasanDitolak;
     private final LocalDateTime createdAt;
 
     public ProjectRequest(int id, String kodeTiket, Client client, List<RequestFeature> fitur, String customNotes,
@@ -42,6 +51,41 @@ public class ProjectRequest {
         this.createdAt = createdAt;
     }
 
+    /** PENDING → REVIEW. */
+    public void mulaiReview() throws InvalidStatusException {
+        if (status != RequestStatus.PENDING) {
+            throw new InvalidStatusException("Hanya pengajuan PENDING yang bisa mulai direview, status sekarang " + status);
+        }
+        status = RequestStatus.REVIEW;
+    }
+
+    /** REVIEW → APPROVED. Link grup WhatsApp wajib diisi. */
+    public void approve(String link) throws InvalidStatusException, ValidationException {
+        if (status != RequestStatus.REVIEW) {
+            throw new InvalidStatusException("Hanya pengajuan REVIEW yang bisa disetujui, status sekarang " + status);
+        }
+        String bersih = link == null ? "" : link.trim();
+        if (!bersih.startsWith(WAG_PREFIX) || bersih.length() == WAG_PREFIX.length()
+                || bersih.length() > MAKS_PANJANG_TEKS || bersih.contains(" ")) {
+            throw new ValidationException("validation.wag");
+        }
+        wagLink = bersih;
+        status = RequestStatus.APPROVED;
+    }
+
+    /** PENDING/REVIEW → REJECTED. Alasan wajib diisi. Boleh langsung dari PENDING, misalnya untuk spam. */
+    public void reject(String alasan) throws InvalidStatusException, ValidationException {
+        if (status != RequestStatus.PENDING && status != RequestStatus.REVIEW) {
+            throw new InvalidStatusException("Pengajuan " + status + " sudah final dan tidak bisa ditolak");
+        }
+        String bersih = alasan == null ? "" : alasan.trim();
+        if (bersih.isEmpty() || bersih.length() > MAKS_PANJANG_TEKS) {
+            throw new ValidationException("admin.error.reason");
+        }
+        alasanDitolak = bersih;
+        status = RequestStatus.REJECTED;
+    }
+
     public int getId() {
         return id;
     }
@@ -54,6 +98,7 @@ public class ProjectRequest {
         return client;
     }
 
+    /** Fitur yang dipilih. Kosong kalau pengajuan diambil lewat daftar (findAll / findByStatus). */
     public List<RequestFeature> getFitur() {
         return fitur;
     }

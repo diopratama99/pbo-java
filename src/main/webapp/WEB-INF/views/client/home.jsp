@@ -35,9 +35,9 @@
                 <span class="badge bg-glacier text-ink transition group-hover:scale-105"><fmt:message key="home.card.action"/> &rarr;</span>
             </div>
             <p class="mt-10 text-sm text-muted"><fmt:message key="home.card.from"/></p>
-            <%-- Prototype: angka masih tetap. Website (Rp 3.000.000) + MySQL (Rp 1.000.000) dari seed.sql --%>
+            <%-- Platform termurah + database termurah yang aktif, dihitung di HomeServlet --%>
             <p class="mt-1 text-4xl font-semibold tracking-tight whitespace-nowrap md:text-5xl">
-                <t:rupiah value="4000000"/>
+                <t:rupiah value="${startingPrice}"/>
             </p>
             <p class="mt-3 text-sm text-muted"><fmt:message key="home.card.note"/></p>
         </a>

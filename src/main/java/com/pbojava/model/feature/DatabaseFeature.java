@@ -15,4 +15,9 @@ public class DatabaseFeature extends Feature {
     public String getKategori() {
         return "DATABASE";
     }
+
+    @Override
+    public BigDecimal hitungHarga(PlatformFeature platform) {
+        return getHargaDasar();
+    }
 }

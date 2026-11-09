@@ -10,6 +10,13 @@
           class="mx-auto grid max-w-7xl gap-12 px-5 pt-4 pb-28 md:px-10 lg:grid-cols-[1fr_380px] lg:gap-16 lg:pb-0">
 
         <div class="space-y-16">
+            <%-- Pesan dari validasi di server (EstimateServlet). Biasanya sudah dicegah validate.js --%>
+            <c:if test="${not empty errorKey}">
+                <p class="flex items-center gap-2 rounded-full bg-danger/10 px-4 py-2.5 text-sm text-danger" role="alert">
+                    <span class="size-1.5 shrink-0 rounded-full bg-danger"></span><fmt:message key="${errorKey}"/>
+                </p>
+            </c:if>
+
             <%-- 1. Platform --%>
             <fieldset data-rise>
                 <legend class="flex items-baseline gap-3">
@@ -72,7 +79,7 @@
                     <span class="text-2xl font-semibold tracking-tight md:text-3xl"><fmt:message key="estimate.step.notes"/></span>
                     <span class="text-sm text-muted">(<fmt:message key="common.optional"/>)</span>
                 </legend>
-                <textarea name="notes" rows="4" class="textarea mt-6" placeholder="<fmt:message key="estimate.notes.placeholder"/>"></textarea>
+                <textarea name="notes" rows="4" class="textarea mt-6" placeholder="<fmt:message key="estimate.notes.placeholder"/>"><c:out value="${param.notes}"/></textarea>
             </fieldset>
 
             <%-- 6. Data diri --%>
@@ -85,20 +92,20 @@
                 <div class="mt-6 grid gap-5 sm:grid-cols-2">
                     <label class="block">
                         <span class="field-label"><fmt:message key="estimate.form.name"/></span>
-                        <input type="text" name="nama" class="input" required maxlength="100" autocomplete="name">
+                        <input type="text" name="nama" class="input" required maxlength="100" autocomplete="name" value="<c:out value="${param.nama}"/>">
                     </label>
                     <label class="block">
                         <span class="field-label"><fmt:message key="estimate.form.company"/> (<fmt:message key="common.optional"/>)</span>
-                        <input type="text" name="instansi" class="input" maxlength="100" autocomplete="organization">
+                        <input type="text" name="instansi" class="input" maxlength="100" autocomplete="organization" value="<c:out value="${param.instansi}"/>">
                     </label>
                     <label class="block">
                         <span class="field-label"><fmt:message key="estimate.form.whatsapp"/></span>
                         <input type="tel" name="noWa" class="input" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx"
-                               pattern="[0-9+ ]{9,20}" data-msg-pattern="<fmt:message key="validation.whatsapp"/>">
+                               pattern="[0-9+ ]{9,20}" data-msg-pattern="<fmt:message key="validation.whatsapp"/>" value="<c:out value="${param.noWa}"/>">
                     </label>
                     <label class="block">
                         <span class="field-label"><fmt:message key="estimate.form.email"/></span>
-                        <input type="email" name="email" class="input" required maxlength="100" autocomplete="email">
+                        <input type="email" name="email" class="input" required maxlength="100" autocomplete="email" value="<c:out value="${param.email}"/>">
                     </label>
                 </div>
             </fieldset>
