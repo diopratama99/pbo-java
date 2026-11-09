@@ -1,6 +1,8 @@
 package com.pbojava.controller;
 
 import com.pbojava.dao.DAOFactory;
+import com.pbojava.dao.ProjectRequestDAO;
+import com.pbojava.model.ProjectRequest;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,8 +11,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Optional;
 
-/** Cek status pengajuan pakai kode tiket + email. */
+/**
+ * Cek status pengajuan pakai kode tiket + email.
+ * Kalau cocok, ditampilkan juga riwayat statusnya dan pengajuan lain dengan email yang sama.
+ */
 @WebServlet("/track")
 public class TrackServlet extends HttpServlet {
 
@@ -31,9 +37,17 @@ public class TrackServlet extends HttpServlet {
         request.setAttribute("searched", true);
 
         if (!ticket.isEmpty() && !email.isEmpty()) {
-            DAOFactory.projectRequestDAO()
-                    .findByTicketAndEmail(ticket, email)
-                    .ifPresent(found -> request.setAttribute("result", found));
+            ProjectRequestDAO dao = DAOFactory.projectRequestDAO();
+            Optional<ProjectRequest> found = dao.findByTicketAndEmail(ticket, email);
+            if (found.isPresent()) {
+                ProjectRequest result = found.get();
+                request.setAttribute("result", result);
+                request.setAttribute("history", dao.findHistory(result.getId()));
+                // Hanya ditampilkan setelah kode tiket dan email terbukti cocok
+                request.setAttribute("others", dao.findByEmail(result.getClient().getEmail()).stream()
+                        .filter(other -> other.getId() != result.getId())
+                        .toList());
+            }
         }
         request.getRequestDispatcher("/WEB-INF/views/client/track.jsp").forward(request, response);
     }

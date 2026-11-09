@@ -6,6 +6,7 @@ import com.pbojava.model.Client;
 import com.pbojava.model.ProjectRequest;
 import com.pbojava.model.RequestFeature;
 import com.pbojava.model.RequestStatus;
+import com.pbojava.model.StatusHistory;
 import com.pbojava.util.DBConnection;
 
 import java.sql.Connection;
@@ -13,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -20,7 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Pengajuan dari tabel project_requests, beserta klien (clients) dan fiturnya (request_features). */
+/**
+ * Pengajuan dari tabel project_requests, beserta klien (clients), fiturnya (request_features),
+ * dan riwayat statusnya (request_status_history).
+ */
 public class JdbcProjectRequestDAO implements ProjectRequestDAO {
 
     private static final String SELECT = "SELECT pr.id, pr.kode_tiket, pr.custom_notes, pr.subtotal, pr.diskon, "
@@ -38,6 +43,11 @@ public class JdbcProjectRequestDAO implements ProjectRequestDAO {
     @Override
     public List<ProjectRequest> findByStatus(RequestStatus status) {
         return queryList(SELECT + "WHERE pr.status = ?" + TERBARU, status.name());
+    }
+
+    @Override
+    public List<ProjectRequest> findByEmail(String email) {
+        return queryList(SELECT + "WHERE c.email = ?" + TERBARU, email.trim());
     }
 
     @Override
@@ -80,6 +90,26 @@ public class JdbcProjectRequestDAO implements ProjectRequestDAO {
             return findOneWithFeatures(conn, stmt);
         } catch (SQLException e) {
             throw new DataAccessException("Gagal mencari pengajuan", e);
+        }
+    }
+
+    @Override
+    public List<StatusHistory> findHistory(int requestId) {
+        String sql = "SELECT h.status, h.created_at, a.nama AS admin_nama FROM request_status_history h "
+                + "LEFT JOIN admins a ON a.id = h.admin_id WHERE h.request_id = ? ORDER BY h.created_at, h.id";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, requestId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<StatusHistory> hasil = new ArrayList<>();
+                while (rs.next()) {
+                    hasil.add(new StatusHistory(RequestStatus.valueOf(rs.getString("status")),
+                            rs.getObject("created_at", LocalDateTime.class), rs.getString("admin_nama")));
+                }
+                return hasil;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Gagal membaca riwayat pengajuan " + requestId, e);
         }
     }
 
@@ -144,6 +174,7 @@ public class JdbcProjectRequestDAO implements ProjectRequestDAO {
                     stmt.executeBatch();
                 }
 
+                catatRiwayat(conn, requestId, request.getStatus(), null);
                 conn.commit();
                 return requestId;
             } catch (SQLException e) {
@@ -156,19 +187,51 @@ public class JdbcProjectRequestDAO implements ProjectRequestDAO {
     }
 
     @Override
-    public boolean updateStatus(ProjectRequest request, RequestStatus statusLama) {
+    public boolean updateStatus(ProjectRequest request, RequestStatus statusLama, int adminId) {
         String sql = "UPDATE project_requests SET status = ?, wag_link = ?, alasan_ditolak = ? "
                 + "WHERE id = ? AND status = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, request.getStatus().name());
-            stmt.setString(2, request.getWagLink());
-            stmt.setString(3, request.getAlasanDitolak());
-            stmt.setInt(4, request.getId());
-            stmt.setString(5, statusLama.name());
-            return stmt.executeUpdate() == 1;
+        try (Connection conn = DBConnection.getConnection()) {
+            // Perubahan status dan catatan riwayatnya disimpan bersama, atau tidak sama sekali
+            conn.setAutoCommit(false);
+            try {
+                int berubah;
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, request.getStatus().name());
+                    stmt.setString(2, request.getWagLink());
+                    stmt.setString(3, request.getAlasanDitolak());
+                    stmt.setInt(4, request.getId());
+                    stmt.setString(5, statusLama.name());
+                    berubah = stmt.executeUpdate();
+                }
+                if (berubah != 1) {
+                    conn.rollback();
+                    return false;
+                }
+                catatRiwayat(conn, request.getId(), request.getStatus(), adminId);
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
         } catch (SQLException e) {
             throw new DataAccessException("Gagal mengubah status pengajuan " + request.getId(), e);
+        }
+    }
+
+    /** Waktunya diisi database (CURRENT_TIMESTAMP), supaya semua catatan memakai jam yang sama. */
+    private static void catatRiwayat(Connection conn, int requestId, RequestStatus status, Integer adminId)
+            throws SQLException {
+        String sql = "INSERT INTO request_status_history (request_id, status, admin_id) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, requestId);
+            stmt.setString(2, status.name());
+            if (adminId == null) {
+                stmt.setNull(3, Types.INTEGER);
+            } else {
+                stmt.setInt(3, adminId);
+            }
+            stmt.executeUpdate();
         }
     }
 

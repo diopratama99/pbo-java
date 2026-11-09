@@ -60,6 +60,15 @@
                             <a href="<c:out value="${result.wagLink}"/>" target="_blank" rel="noopener noreferrer"
                                class="btn btn-primary mt-8 w-full sm:w-auto"><fmt:message key="track.joinGroup"/> &rarr;</a>
                         </c:if>
+
+                        <c:if test="${not empty history}">
+                            <div class="mt-8 border-t border-ink/10 pt-6">
+                                <p class="label"><fmt:message key="track.history"/></p>
+                                <div class="mt-5">
+                                    <t:status-timeline items="${history}"/>
+                                </div>
+                            </div>
+                        </c:if>
                     </c:when>
                     <c:otherwise>
                         <p class="text-2xl font-semibold tracking-tight md:text-3xl"><fmt:message key="track.notFound.title"/></p>
@@ -67,6 +76,32 @@
                     </c:otherwise>
                 </c:choose>
             </div>
+
+            <%-- Pengajuan lain dengan email yang sama. Tombol Lihat mengirim ulang form cek status,
+                 jadi email tidak pernah masuk ke URL --%>
+            <c:if test="${not empty others}">
+                <section class="glass mt-6 max-w-2xl p-7 md:p-10">
+                    <p class="label"><fmt:message key="track.others.title"/></p>
+                    <ul class="mt-5 divide-y divide-ink/5">
+                        <c:forEach var="other" items="${others}">
+                            <li class="flex flex-wrap items-center justify-between gap-3 py-4">
+                                <div>
+                                    <p class="font-semibold tracking-wide"><c:out value="${other.kodeTiket}"/></p>
+                                    <p class="text-xs text-muted">${other.formatTanggal(sessionScope.lang)} &middot; <t:rupiah value="${other.totalEstimasi}"/></p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <t:status-badge status="${other.status}"/>
+                                    <form method="post" action="${ctx}/track">
+                                        <input type="hidden" name="ticket" value="<c:out value="${other.kodeTiket}"/>">
+                                        <input type="hidden" name="email" value="<c:out value="${email}"/>">
+                                        <button type="submit" class="btn btn-outline btn-sm"><fmt:message key="track.others.open"/></button>
+                                    </form>
+                                </div>
+                            </li>
+                        </c:forEach>
+                    </ul>
+                </section>
+            </c:if>
         </div>
     </c:if>
 

@@ -92,7 +92,7 @@
         </div>
 
         <%-- Aksi sesuai status. Aturannya dicek lagi di ProjectRequest --%>
-        <aside class="xl:sticky xl:top-6 xl:self-start">
+        <aside class="space-y-6 xl:sticky xl:top-6 xl:self-start">
             <section class="panel space-y-6">
                 <h2 class="label text-muted"><fmt:message key="admin.detail.actions"/></h2>
                 <c:if test="${not empty errorKey}">
@@ -152,6 +152,14 @@
                         <button type="submit" class="btn btn-danger w-full"><fmt:message key="admin.detail.reject"/></button>
                     </form>
                 </c:if>
+            </section>
+
+            <%-- Riwayat status: kapan diajukan, direview, disetujui/ditolak, dan oleh admin siapa --%>
+            <section class="panel">
+                <h2 class="label text-muted"><fmt:message key="admin.detail.history"/></h2>
+                <div class="mt-5">
+                    <t:status-timeline items="${history}" showAdmin="true"/>
+                </div>
             </section>
         </aside>
     </div>

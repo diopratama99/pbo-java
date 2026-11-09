@@ -1,4 +1,6 @@
 SET NAMES utf8mb4;
+-- Semua tanggal di file ini ditulis dalam WIB, sama dengan zona waktu aplikasi (serverTimezone=Asia/Jakarta)
+SET time_zone = '+07:00';
 
 -- Data contoh. Semua baris memakai id tetap dan "ON DUPLICATE KEY UPDATE",
 -- jadi file ini aman dijalankan ulang tanpa membuat data dobel.
@@ -107,3 +109,21 @@ INSERT INTO request_features (request_id, feature_id, harga_saat_itu) VALUES
 (5, 2, 5000000), (5, 4, 1000000), (5, 6, 1950000), (5, 9, 1300000),
 (6, 1, 3000000), (6, 5, 1000000), (6, 11, 1000000), (6, 15, 1000000)
 AS baru ON DUPLICATE KEY UPDATE harga_saat_itu = baru.harga_saat_itu;
+
+-- Riwayat status pengajuan contoh. Dihapus lalu diisi ulang supaya file ini tetap aman dijalankan ulang.
+-- Admin-nya akun "admin" kalau sudah dibuat (BuatAdmin), kalau belum NULL.
+DELETE FROM request_status_history WHERE request_id BETWEEN 1 AND 6;
+
+INSERT INTO request_status_history (request_id, status, admin_id, created_at) VALUES
+(1, 'PENDING',  NULL, '2026-10-14 09:30:00'),
+(2, 'PENDING',  NULL, '2026-10-12 14:05:00'),
+(2, 'REVIEW',   (SELECT id FROM admins WHERE username = 'admin'), '2026-10-13 09:15:00'),
+(3, 'PENDING',  NULL, '2026-10-08 10:00:00'),
+(3, 'REVIEW',   (SELECT id FROM admins WHERE username = 'admin'), '2026-10-08 15:20:00'),
+(3, 'APPROVED', (SELECT id FROM admins WHERE username = 'admin'), '2026-10-09 11:05:00'),
+-- Ditolak langsung dari PENDING, tanpa review
+(4, 'PENDING',  NULL, '2026-10-05 16:45:00'),
+(4, 'REJECTED', (SELECT id FROM admins WHERE username = 'admin'), '2026-10-06 08:30:00'),
+(5, 'PENDING',  NULL, '2026-10-15 08:10:00'),
+(6, 'PENDING',  NULL, '2026-10-13 19:20:00'),
+(6, 'REVIEW',   (SELECT id FROM admins WHERE username = 'admin'), '2026-10-14 10:00:00');

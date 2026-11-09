@@ -4,6 +4,7 @@ import com.pbojava.dao.FeatureDAO;
 import com.pbojava.dao.ProjectRequestDAO;
 import com.pbojava.exception.InvalidStatusException;
 import com.pbojava.exception.ValidationException;
+import com.pbojava.model.Admin;
 import com.pbojava.model.Client;
 import com.pbojava.model.ProjectRequest;
 import com.pbojava.model.RequestStatus;
@@ -89,11 +90,13 @@ public class RequestService {
 
     /**
      * Jalankan aksi admin: "review", "approve" (nilai = link grup WA), atau "reject" (nilai = alasan).
-     * Aturan statusnya ada di ProjectRequest, di sini hanya memanggil dan menyimpan hasilnya.
+     * Aturan statusnya ada di ProjectRequest, di sini hanya memanggil dan menyimpan hasilnya
+     * beserta catatan riwayatnya (siapa dan kapan).
      *
      * @return false kalau pengajuan tidak ditemukan
      */
-    public boolean ubahStatus(int id, String aksi, String nilai) throws InvalidStatusException, ValidationException {
+    public boolean ubahStatus(int id, String aksi, String nilai, Admin admin)
+            throws InvalidStatusException, ValidationException {
         Optional<ProjectRequest> found = requestDAO.findById(id);
         if (found.isEmpty()) {
             return false;
@@ -108,7 +111,7 @@ public class RequestService {
             default -> throw new ValidationException("validation.invalid");
         }
 
-        if (!requestDAO.updateStatus(request, statusLama)) {
+        if (!requestDAO.updateStatus(request, statusLama, admin.getId())) {
             // Status di database sudah diubah orang lain sejak halaman ini dibuka
             throw new InvalidStatusException("Status pengajuan " + id + " sudah berubah");
         }

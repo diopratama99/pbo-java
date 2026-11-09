@@ -71,6 +71,18 @@ CREATE TABLE request_features (
     FOREIGN KEY (feature_id) REFERENCES master_features(id)
 );
 
+-- Setiap perubahan status dicatat di sini: status barunya, kapan, dan admin yang melakukannya.
+-- Baris PENDING dibuat saat klien mengirim pengajuan, jadi admin_id-nya NULL.
+CREATE TABLE request_status_history (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    request_id INT NOT NULL,
+    status ENUM('PENDING', 'REVIEW', 'APPROVED', 'REJECTED') NOT NULL,
+    admin_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (request_id) REFERENCES project_requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
+);
+
 -- Halaman Tim
 CREATE TABLE team_members (
     id INT PRIMARY KEY AUTO_INCREMENT,

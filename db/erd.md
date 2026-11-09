@@ -12,6 +12,8 @@ erDiagram
     project_requests ||--o{ request_features : "berisi"
     master_features ||--o{ request_features : "dipilih di"
     team_members ||--o{ team_experiences : "punya"
+    project_requests ||--o{ request_status_history : "punya riwayat"
+    admins |o--o{ request_status_history : "melakukan"
 
     admins {
         int id PK
@@ -74,6 +76,14 @@ erDiagram
         decimal harga_saat_itu "harga saat pengajuan dibuat"
     }
 
+    request_status_history {
+        int id PK
+        int request_id FK
+        enum status "status setelah aksi"
+        int admin_id FK "NULL untuk PENDING dari klien"
+        timestamp created_at "waktu aksi"
+    }
+
     team_members {
         int id PK
         varchar nama
@@ -93,7 +103,8 @@ erDiagram
     }
 ```
 
-- `admins` tidak berelasi dengan tabel lain. Tabel ini hanya dipakai untuk login admin.
+- `admins` dipakai untuk login admin, dan dicatat di `request_status_history` sebagai pelaku aksi.
+- `request_status_history` mencatat setiap perubahan status: status barunya, kapan, dan oleh admin siapa. Ikut terhapus kalau pengajuannya dihapus (`ON DELETE CASCADE`). Kalau akun admin dihapus, `admin_id` menjadi NULL (`ON DELETE SET NULL`).
 - `portfolios` juga berdiri sendiri. Isinya ditampilkan di beranda.
 - `team_members` dan `team_experiences` dipakai halaman Tim. Pengalaman ikut terhapus kalau anggotanya dihapus (`ON DELETE CASCADE`).
 - Kolom berakhiran `_en` berisi teks bahasa Inggris. Kalau kosong, aplikasi memakai versi Indonesia.

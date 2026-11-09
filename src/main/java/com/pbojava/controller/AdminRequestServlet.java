@@ -4,6 +4,7 @@ import com.pbojava.dao.DAOFactory;
 import com.pbojava.dao.ProjectRequestDAO;
 import com.pbojava.exception.InvalidStatusException;
 import com.pbojava.exception.ValidationException;
+import com.pbojava.model.Admin;
 import com.pbojava.model.ProjectRequest;
 import com.pbojava.model.RequestStatus;
 import com.pbojava.pricing.QuotationCalculator;
@@ -47,7 +48,10 @@ public class AdminRequestServlet extends HttpServlet {
                 return;
             }
             request.setAttribute("item", found.get());
-            request.setAttribute("errorKey", ERRORS.get(request.getParameter("error")));
+            request.setAttribute("history", dao.findHistory(id));
+            // Map.of tidak menerima key null, jadi cek dulu sebelum get()
+            String error = request.getParameter("error");
+            request.setAttribute("errorKey", error == null ? null : ERRORS.get(error));
             request.getRequestDispatcher("/WEB-INF/views/admin/request-detail.jsp").forward(request, response);
             return;
         }
@@ -82,9 +86,11 @@ public class AdminRequestServlet extends HttpServlet {
         String action = request.getParameter("action");
         String nilai = "approve".equals(action) ? request.getParameter("wagLink") : request.getParameter("alasan");
         String detailUrl = request.getContextPath() + "/admin/requests?id=" + id;
+        // Selalu ada, karena AdminAuthFilter menolak request yang belum login
+        Admin admin = (Admin) request.getSession().getAttribute("admin");
 
         try {
-            if (!service.ubahStatus(id, action, nilai)) {
+            if (!service.ubahStatus(id, action, nilai, admin)) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }

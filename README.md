@@ -107,7 +107,7 @@ Semua URL diawali `http://localhost:8080/pbo-java`. Bahasa bisa diganti lewat to
 | `/team` | Tim | Foto, posisi, pendidikan, dan pengalaman setiap anggota |
 | `/estimate` | Hitung estimasi | Pilih platform, database, dan fitur. Harga di layar hanya preview dari JavaScript. Saat dikirim, server memvalidasi isian dan menghitung ulang harganya |
 | `/estimate/success` | Pengajuan terkirim | Menampilkan kode tiket acak, contoh `DA-7K2P9Q` |
-| `/track` | Cek status | Masukkan kode tiket dan email untuk melihat status pengajuan |
+| `/track` | Cek status | Masukkan kode tiket dan email untuk melihat status pengajuan, riwayat statusnya (kapan diajukan, direview, disetujui/ditolak), dan daftar pengajuan lain dengan email yang sama |
 
 ### Kode untuk tes cek status
 
@@ -128,7 +128,7 @@ Kode tiket dan email harus cocok dua-duanya. Huruf besar dan kecil tidak dibedak
 |---|---|---|
 | `/admin/login` | Login | Masuk dengan akun admin |
 | `/admin/requests` | Daftar pengajuan | Semua pengajuan, bisa difilter per status |
-| `/admin/requests?id=1` | Detail pengajuan | Data klien, fitur yang dipilih beserta harganya, catatan, dan aksi sesuai status: mulai review, setujui (wajib isi link grup WhatsApp), atau tolak (wajib isi alasan) |
+| `/admin/requests?id=1` | Detail pengajuan | Data klien, fitur yang dipilih beserta harganya, catatan, dan aksi sesuai status: mulai review, setujui (wajib isi link grup WhatsApp), atau tolak (wajib isi alasan). Di bawahnya ada riwayat status: tanggal, jam, dan admin yang melakukan setiap aksi |
 | `/admin/portfolios` | Kelola portofolio | Tambah, ubah, dan hapus portofolio dalam 2 bahasa |
 | `/admin/features` | Kelola fitur dan harga | Tambah, ubah, dan nonaktifkan fitur. Di samping form ada preview kartu seperti yang dilihat klien di kalkulator |
 
@@ -149,7 +149,12 @@ Struktur lengkapnya ada di [db/schema.sql](db/schema.sql), dan diagramnya di [db
 
 ### Migrasi
 
-Database yang dibuat sebelum backend selesai belum punya kolom bahasa Inggris dan tabel Tim. Untuk database seperti itu, jalankan [db/migrations/001-backend.sql](db/migrations/001-backend.sql) lalu `db/seed.sql`. Database di server sudah dimigrasi pada 8 November 2026.
+Database baru tidak perlu migrasi, karena `db/schema.sql` sudah berisi semuanya. Untuk database lama, jalankan file yang belum pernah dijalankan, berurutan, lalu `db/seed.sql`:
+
+| File | Isi | Sudah dijalankan di server |
+|---|---|---|
+| [db/migrations/001-backend.sql](db/migrations/001-backend.sql) | Kolom bahasa Inggris dan tabel Tim | 8 November 2026 |
+| [db/migrations/002-status-history.sql](db/migrations/002-status-history.sql) | Tabel `request_status_history`, diisi dari pengajuan yang sudah ada | 9 November 2026 |
 
 Contoh menjalankan file SQL ke database di server (dari folder project):
 
@@ -163,15 +168,19 @@ ssh leykopin@192.168.1.10 'docker exec -i pbo-java-mysql sh -c "mysql --default-
 |---|---|---|
 | Beranda | `portfolios`, `master_features` (harga "Mulai dari") | |
 | Tim | `team_members`, `team_experiences` | |
-| Hitung estimasi | `master_features` yang `is_active = TRUE` | `clients`, `project_requests`, `request_features` dalam satu transaksi saat pengajuan dikirim |
+| Hitung estimasi | `master_features` yang `is_active = TRUE` | `clients`, `project_requests`, `request_features`, `request_status_history` dalam satu transaksi saat pengajuan dikirim |
 | Pengajuan terkirim | | |
-| Cek status | `project_requests` join `clients`, dicari dengan `kode_tiket` dan `clients.email` | |
+| Cek status | `project_requests` join `clients`, dicari dengan `kode_tiket` dan `clients.email`, lalu `request_status_history` dan pengajuan lain dengan email yang sama | |
 | Login admin | `admins` | |
 | Daftar pengajuan | `project_requests` join `clients` | |
-| Detail pengajuan | `project_requests`, `clients`, `request_features` join `master_features` | `project_requests.status`, `wag_link`, `alasan_ditolak` |
+| Detail pengajuan | `project_requests`, `clients`, `request_features` join `master_features`, `request_status_history` join `admins` | `project_requests.status`, `wag_link`, `alasan_ditolak`, dan satu baris baru di `request_status_history`, dalam satu transaksi |
 | Kelola portofolio | `portfolios` | `portfolios` (tambah, ubah, hapus) |
 | Kelola fitur dan harga | `master_features` | `master_features` (tambah, ubah, `is_active`) |
 
 Fitur yang sudah pernah dipakai di pengajuan tidak dihapus. Kolom `is_active` diubah menjadi `FALSE`, supaya fitur itu hilang dari kalkulator tapi pengajuan lama tetap utuh.
 
 Perubahan status hanya disimpan kalau status di database masih sama dengan saat halaman dibuka (`UPDATE ... WHERE status = ?`), jadi dua admin yang menekan tombol bersamaan tidak saling menimpa.
+
+### Zona waktu
+
+Semua jam ditampilkan dalam WIB. URL di `db.properties` memakai `serverTimezone=Asia/Jakarta&forceConnectionTimeZoneToSession=true`, supaya session MySQL juga memakai WIB saat membaca kolom `TIMESTAMP`. Tanpa opsi kedua, jam yang tampil mundur 7 jam. `db/seed.sql` juga menulis tanggalnya dalam WIB (`SET time_zone = '+07:00'`).
