@@ -36,19 +36,41 @@ AS baru ON DUPLICATE KEY UPDATE
     deskripsi = baru.deskripsi, deskripsi_en = baru.deskripsi_en, harga_dasar = baru.harga_dasar,
     pengali = baru.pengali, biaya_setup = baru.biaya_setup, is_active = baru.is_active;
 
+-- Portofolio Dio Pratama, diambil dari landing page TemanLabs (TemanLabs-LandingPage/src/data/content.ts).
+-- Gambarnya ada di src/main/webapp/assets/img/portfolio/.
 INSERT INTO portfolios (id, judul, judul_en, deskripsi, deskripsi_en, tech_stack, image_url) VALUES
-(1, 'Sistem Kasir UMKM', 'Point of Sale for Small Shops',
-    'Aplikasi kasir berbasis web untuk mencatat penjualan dan stok barang harian.',
-    'A web-based cashier app to record daily sales and stock.',
-    'Java, MySQL, Tailwind CSS', '/assets/img/portfolio/kasir.svg'),
-(2, 'Presensi Kampus', 'Campus Attendance',
-    'Presensi mahasiswa dengan QR code, lengkap dengan rekap per mata kuliah.',
-    'Student attendance with QR codes, plus a recap for every course.',
-    'Kotlin, Firebase', '/assets/img/portfolio/presensi.svg'),
-(3, 'Company Profile Kopi Lokal', 'Local Coffee Company Profile',
-    'Website profil usaha dengan menu, lokasi toko, dan pemesanan lewat WhatsApp.',
-    'A business website with the menu, store locations, and ordering via WhatsApp.',
-    'PHP, Bootstrap', '/assets/img/portfolio/kopi.svg')
+(1, 'Bensinku', 'Bensinku',
+    'Pencatat bensin dan perawatan kendaraan. Memprediksi kapan harus isi ulang, mengingatkan jadwal servis, dan punya Asisten Montir berbasis AI.',
+    'A fuel and vehicle maintenance tracker. It predicts when you need to refuel, reminds you of service schedules, and includes an AI-powered Mechanic Assistant.',
+    'Flutter, Supabase', '/assets/img/portfolio/bensinku.webp'),
+(2, 'Temanku', 'Temanku',
+    'Pencatat keuangan pribadi bergaya editorial. Bukan cuma mencatat, tapi juga menganalisis: distribusi kategori, anggaran, target tabungan, sampai perbandingan bulan ke bulan.',
+    'An editorial-style personal finance tracker. It doesn''t just record, it analyzes: category breakdowns, budgets, savings goals, and month-over-month comparisons.',
+    'Flutter, Supabase', '/assets/img/portfolio/temanku.webp'),
+(3, 'Ingatanku', 'Ingatanku',
+    'Tempat menyimpan link dan catatan, ditemani bolubi, karakter yang "makan" setiap ilmu yang kamu simpan. Isinya bisa ditanyakan ke asisten AI dan diulang lewat kuis mingguan.',
+    'A place to save links and notes, with bolubi, a little character that "eats" everything you save. Ask an AI assistant about your notes and review them with a weekly quiz.',
+    'Flutter, Supabase', '/assets/img/portfolio/ingatanku.webp'),
+(4, 'Reamber', 'Reamber',
+    'Aplikasi baca komik dan manhwa bergaya retro. Sumber konten bisa ditambah lewat recipe JSON, lengkap dengan smoke test otomatis.',
+    'A retro-styled comic and manhwa reader. New content sources can be added through JSON recipes, complete with automated smoke tests.',
+    'Flutter, Supabase', '/assets/img/portfolio/reamber.webp'),
+(5, 'TemanLabsOS', 'TemanLabsOS',
+    'Web desktop untuk home server Ubuntu. Kelola Docker, file, backup, dan jaringan dari browser lewat tampilan desktop, tanpa membuka terminal. Dikemas jadi satu file binary.',
+    'A web desktop for Ubuntu home servers. Manage Docker, files, backups, and networking from the browser through a desktop interface, no terminal needed. Ships as a single binary.',
+    'Go, React, TypeScript, Docker', '/assets/img/portfolio/temanlabsos.webp'),
+(6, 'Landing Page TemanLabsOS', 'TemanLabsOS Landing Page',
+    'Landing page untuk TemanLabsOS: tur fitur bergaya jendela desktop, demo yang bisa dicoba langsung, dan instalasi satu perintah. Tersedia dalam dua bahasa.',
+    'The landing page for TemanLabsOS: a feature tour styled as desktop windows, a live demo you can try right away, and one-command installation. Available in two languages.',
+    'Astro', '/assets/img/portfolio/temanlabsos-site.webp'),
+(7, 'FM26 Player Editor', 'FM26 Player Editor',
+    'Editor pemain Football Manager 26 yang bekerja langsung di memori game, hasil reverse engineering sendiri. Cari pemain, ubah atribut, posisi, dan traits, lalu terapkan saat game berjalan.',
+    'A Football Manager 26 player editor that works directly in the game''s memory, built through our own reverse engineering. Find a player, change attributes, positions, and traits, and apply them while the game is running.',
+    'Python, Tkinter, pymem', '/assets/img/portfolio/fmlc.webp'),
+(8, 'Macropad Configurator', 'Macropad Configurator',
+    'Pengganti software bawaan macropad, dibangun dari reverse engineering protokol konfigurasinya. Tiap tombol dan knob bisa menjalankan aksi sungguhan, mirip Stream Deck.',
+    'A replacement for the macropad''s stock software, built by reverse engineering its configuration protocol. Every key and knob can run real actions, much like a Stream Deck.',
+    'Python, HID, HTML', '/assets/img/portfolio/macropad.webp')
 AS baru ON DUPLICATE KEY UPDATE
     judul = baru.judul, judul_en = baru.judul_en, deskripsi = baru.deskripsi, deskripsi_en = baru.deskripsi_en,
     tech_stack = baru.tech_stack, image_url = baru.image_url;
